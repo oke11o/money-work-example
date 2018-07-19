@@ -4,7 +4,7 @@ namespace App\Kernel\Http;
 
 class Response
 {
-    private $body;
+    protected $body;
 
     public function __construct(string $body)
     {

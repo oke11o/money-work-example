@@ -2,13 +2,22 @@
 
 namespace App\Kernel;
 
+use App\Exception\Container\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class Container implements ContainerInterface
 {
+    /**
+     * @var array
+     */
+    private $services = [];
 
+    public function add(string $key, $service)
+    {
+        $this->services[$key] = $service;
+    }
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
@@ -21,7 +30,11 @@ class Container implements ContainerInterface
      */
     public function get($id)
     {
-        // TODO: Implement get() method.
+        if ($this->has($id)) {
+            return $this->services[$id];
+        }
+
+        throw new NotFoundException($id);
     }
 
     /**
@@ -37,6 +50,6 @@ class Container implements ContainerInterface
      */
     public function has($id)
     {
-        // TODO: Implement has() method.
+        return \array_key_exists($id, $this->services);
     }
 }

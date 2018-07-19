@@ -6,7 +6,6 @@ use App\Kernel\Http\Request;
 
 class Router
 {
-
     /**
      * @var RouteCollection
      */
@@ -31,6 +30,7 @@ class Router
         $this->routes = $this->parseCollection($routesConfig);
 
         $this->setBasePath($basePath);
+        $this->setServerErrorController();
     }
 
     /**
@@ -57,7 +57,6 @@ class Router
             $requestUri = '/';
         }
 
-        $this->setServerErrorController();
         /** @var Route $route */
         foreach ($this->routes as $route) {
             if ($route->getMethods() && !\in_array($requestMethod, $route->getMethods(), true)) {
