@@ -3,21 +3,11 @@
 namespace App\Kernel;
 
 use App\Controller\BaseController;
-use App\DataMapper\MapperRepository;
-use App\Entity\Transaction;
-use App\Entity\User;
 use App\Exception\Kernel\KernelException;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
 use App\Kernel\Router\Router;
-use App\Provider\UserProvider;
-use App\Security\Authenticator;
-use App\Security\Authorizer;
-use App\Security\PasswordEncoder;
-use PDO;
-use PDOException;
 use Twig_Environment;
-use Twig_Loader_Filesystem;
 
 /**
  * Class Kernel
@@ -46,18 +36,6 @@ class Kernel
      * @var string
      */
     private $configDir;
-    /**
-     * @var Router
-     */
-    private $router;
-    /**
-     * @var Twig_Environment
-     */
-    private $templateEngine;
-    /**
-     * @var MapperRepository
-     */
-    private $mapperRepository;
 
     /**
      * @var string
@@ -73,8 +51,12 @@ class Kernel
      * @var string
      */
     private $routesFilename = '';
+    /**
+     * @var ContainerBuilder
+     */
+    private $containerBuilder;
 
-    public function __construct($rootDir = '', $environment = 'prod')
+    public function __construct($rootDir = '', $environment = 'prod', ContainerBuilder $containerBuilder)
     {
         $this->rootDir = $rootDir;
         if (!$this->rootDir) {
@@ -82,15 +64,15 @@ class Kernel
         }
         $this->configDir = 'config';
 
+        $this->routesFilename = 'routes.php';
         if ('prod' == $environment) {
             $this->configName = 'config.php';
             $this->configLocalName = 'config_local.php';
-            $this->routesFilename = 'routes.php';
         } else {
             $this->configName = "config_$environment.php";
             $this->configLocalName = "config_local_$environment.php";
-            $this->routesFilename = "routes_$environment.php";
         }
+        $this->containerBuilder = $containerBuilder;
     }
 
     /**
@@ -125,21 +107,26 @@ class Kernel
     {
         $this->boot();
 
-        $controllerPair = $this->router->match($request);
+        /** @var Router $router */
+        $router = $this->container->get(Router::class);
+        /** @var Twig_Environment $twig */
+        $twig = $this->container->get(Twig_Environment::class);
+
+        $controllerPair = $router->match($request);
 
         try {
             $controllerName = $controllerPair->getController();
             /** @var BaseController $controller */
-            $controller = new $controllerName($this->router, $this->templateEngine, $this->container);
+            $controller = new $controllerName($router, $twig, $this->container);
             $actionName = $controllerPair->getAction();
 
             return $controller->$actionName($request);
         } catch (\Exception|\Error $exception) {
-            $controllerPair = $this->router->getServerError();
+            $controllerPair = $router->getServerError();
 
             $controllerName = $controllerPair->getController();
             /** @var BaseController $controller */
-            $controller = new $controllerName($this->router, $this->templateEngine, $this->container);
+            $controller = new $controllerName($router, $twig, $this->container);
             $actionName = $controllerPair->getAction();
 
             return $controller->$actionName($request, $exception);
@@ -157,19 +144,14 @@ class Kernel
     }
 
     /**
-     * @throws \App\Exception\Kernel\KernelException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws KernelException
      */
     private function buildContainer(): void
     {
         //TODO: need DI
-        $this->container = new Container();
-
-        $this->initRouter();
-        $this->initTwig();
-        $this->templateEngine->addExtension(new TwigExtension($this->router));
-
-        $this->initDataMapper();
-        $this->initSecurity();
+        $this->container = $this->containerBuilder->create($this->rootDir, $this->routes, $this->config->get('db'));
     }
 
     /**
@@ -201,63 +183,6 @@ class Kernel
         $this->validateRoutes($this->routes);
     }
 
-    private function initRouter(): void
-    {
-        $this->router = new Router($this->routes);
-        $this->container->add(Router::class, $this->router);
-    }
-
-    private function initTwig(): void
-    {
-        $loader = new Twig_Loader_Filesystem($this->rootDir.DIRECTORY_SEPARATOR.'templates');
-        $twig = new Twig_Environment(
-            $loader,
-            [
-                'cache' => $this->rootDir.DIRECTORY_SEPARATOR.'var'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.'twig',
-            ]
-
-        );
-        $this->templateEngine = $twig;
-
-        $this->container->add(Twig_Environment::class, $this->templateEngine);
-    }
-
-    /**
-     * @throws KernelException
-     */
-    private function initDataMapper(): void
-    {
-        $list = [
-            User::class,
-            Transaction::class,
-        ];
-        $pdo = $this->createPdo();
-        $this->mapperRepository = new MapperRepository($pdo, $list);
-
-        $this->container->add(MapperRepository::class, $this->mapperRepository);
-    }
-
-    /**
-     * @return PDO
-     * @throws KernelException
-     */
-    private function createPdo(): PDO
-    {
-        try {
-            $config = $this->config->get('db');
-            $pdo = new PDO(
-                sprintf('mysql:host=%s;dbname=%s', $config['host'], $config['name']),
-                $config['user'],
-                $config['password']
-            );
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            throw new KernelException('Connection failed: '.$e->getMessage(), 0, $e);
-        }
-
-        return $pdo;
-    }
-
     /**
      * @param array $config
      * @throws KernelException
@@ -267,6 +192,7 @@ class Kernel
         //TODO: create validation
 //        throw new ConfigValidationException();
     }
+
     /**
      * @param array $routes
      * @throws KernelException
@@ -275,23 +201,5 @@ class Kernel
     {
         //TODO: create validation
 //        throw new RouteValidationException();
-    }
-
-    private function initSecurity(): void
-    {
-        $userProvider = new UserProvider();
-        $this->container->add(UserProvider::class, $userProvider);
-
-        $encoder = new PasswordEncoder();
-        $this->container->add(PasswordEncoder::class, $encoder);
-
-        $authorizer = new Authorizer($userProvider);
-        $this->container->add(Authorizer::class, $authorizer);
-
-        $user = $authorizer->getAuthUser();
-        $this->container->add(User::class, $user);
-
-        $authenticator = new Authenticator($userProvider, $encoder);
-        $this->container->add(Authenticator::class, $authenticator);
     }
 }

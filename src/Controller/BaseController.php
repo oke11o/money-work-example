@@ -9,6 +9,11 @@ use App\Kernel\Router\Router;
 use Psr\Container\ContainerInterface;
 use Twig_Environment;
 
+/**
+ * Class BaseController
+ * @package App\Controller
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 abstract class BaseController
 {
     /**
@@ -24,6 +29,12 @@ abstract class BaseController
      */
     protected $container;
 
+    /**
+     * BaseController constructor.
+     * @param Router $router
+     * @param Twig_Environment $twig
+     * @param ContainerInterface $container
+     */
     public function __construct(Router $router, Twig_Environment $twig, ContainerInterface $container)
     {
         $this->router = $router;
@@ -46,16 +57,30 @@ abstract class BaseController
         return new Response($this->twig->render($templatePath, $params));
     }
 
+    /**
+     * @param $url
+     * @return RedirectResponse
+     */
     protected function redirect($url)
     {
         return new RedirectResponse($url);
     }
 
+    /**
+     * @param $route
+     * @param array $params
+     * @return RedirectResponse
+     */
     protected function redirectToRoute($route, $params = [])
     {
         return new RedirectResponse($this->router->generate($route, $params));
     }
 
+    /**
+     * @return User|null
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
     protected function getUser(): ?User
     {
         if ($this->container->has(User::class)) {
@@ -63,6 +88,9 @@ abstract class BaseController
         }
     }
 
+    /**
+     * @return array
+     */
     private function getDefaultTemplateParams()
     {
         return [

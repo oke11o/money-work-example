@@ -7,8 +7,22 @@ use App\Kernel\Http\Request;
 use App\Security\Authenticator;
 use App\Security\Authorizer;
 
+/**
+ * Class LoginController
+ * @package App\Controller
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class LoginController extends BaseController
 {
+    /**
+     * @param Request $request
+     * @return \App\Kernel\Http\RedirectResponse|\App\Kernel\Http\Response
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
+     */
     public function index(Request $request)
     {
         $post = $request->getPost();
@@ -31,6 +45,12 @@ class LoginController extends BaseController
         return $this->render('login/index.html.twig', ['errors' => $errors]);
     }
 
+    /**
+     * @param Request $request
+     * @return \App\Kernel\Http\RedirectResponse
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
     public function logout(Request $request)
     {
         /** @var Authorizer $authorizer */

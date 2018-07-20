@@ -21,6 +21,8 @@ class UserProvider implements UserProviderInterface
         if ('admin@admin.ru' === $username) {
             return $this->createTmpUser();
         }
+
+        return null;
     }
 
     /**
@@ -32,6 +34,8 @@ class UserProvider implements UserProviderInterface
         if (1 === $id) {
             return $this->createTmpUser();
         }
+
+        return null;
     }
 
     /**

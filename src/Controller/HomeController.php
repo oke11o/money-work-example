@@ -2,17 +2,19 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
 
+/**
+ * Class HomeController
+ * @package App\Controller
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class HomeController extends BaseController
 {
     /**
      * @param Request $request
      * @return Response
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
      * @throws \Twig_Error_Loader
      * @throws \Twig_Error_Runtime
      * @throws \Twig_Error_Syntax
