@@ -3,17 +3,39 @@
 
 namespace App\Provider;
 
-use App\Repository\UserRepository;
+use App\Entity\User;
 
 class UserProvider
 {
     /**
-     * @var UserRepository
+     * @param $username
+     * @return User|null
      */
-    private $repository;
-
-    public function __construct(UserRepository $repository)
+    public function findByUsername($username): ?User
     {
-        $this->repository = $repository;
+        if ('username' === $username) {
+            return $this->createTmpUser();
+        }
+    }
+
+    /**
+     * @param int $id
+     * @return User|null
+     */
+    public function find(int $id): ?User
+    {
+        if (1 === $id) {
+            return $this->createTmpUser();
+        }
+    }
+
+    /**
+     * @return User
+     */
+    private function createTmpUser(): User
+    {
+        return (new User())
+            ->setEmail('username')
+            ->setId(1);
     }
 }
