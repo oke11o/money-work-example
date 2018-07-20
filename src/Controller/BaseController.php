@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Kernel\Http\RedirectResponse;
 use App\Kernel\Http\Response;
 use App\Kernel\Router\Router;
@@ -13,15 +14,15 @@ abstract class BaseController
     /**
      * @var Router
      */
-    private $router;
+    protected $router;
     /**
      * @var \Twig_Environment
      */
-    private $twig;
+    protected $twig;
     /**
      * @var ContainerInterface
      */
-    private $container;
+    protected $container;
 
     public function __construct(Router $router, Twig_Environment $twig, ContainerInterface $container)
     {
@@ -30,13 +31,42 @@ abstract class BaseController
         $this->container = $container;
     }
 
-    public function render(string $templatePath, $params)
+    /**
+     * @param string $templatePath
+     * @param array $params
+     * @return Response
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
+     */
+    protected function render(string $templatePath, array $params = [])
     {
+        $params = array_merge($this->getDefaultTemplateParams(), $params);
+
         return new Response($this->twig->render($templatePath, $params));
     }
 
-    public function redirect($url)
+    protected function redirect($url)
     {
         return new RedirectResponse($url);
+    }
+
+    protected function redirectToRoute($route, $params = [])
+    {
+        return new RedirectResponse($this->router->generate($route, $params));
+    }
+
+    protected function getUser(): ?User
+    {
+        if ($this->container->has(User::class)) {
+            return $this->container->get(User::class);
+        }
+    }
+
+    private function getDefaultTemplateParams()
+    {
+        return [
+            'user' => $this->getUser(),
+        ];
     }
 }

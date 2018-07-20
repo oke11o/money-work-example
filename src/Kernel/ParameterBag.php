@@ -2,6 +2,11 @@
 
 namespace App\Kernel;
 
+/**
+ * Class ParameterBag
+ * @package App\Kernel
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class ParameterBag implements \IteratorAggregate, \Countable
 {
     /**

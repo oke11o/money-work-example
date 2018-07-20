@@ -85,14 +85,19 @@ class Router
      * @param array $params
      * @return string
      */
-    public function generate($routeName = '', array $params = array())
+    public function generate($routeName = '', array $params = [])
     {
         $route = $this->routes->getNamedRoute($routeName);
         if (!$route) {
             throw new \RuntimeException(sprintf('Cannot find route "%s"', $routeName));
         }
 
-        return $route->getUrl().'?'.http_build_query($params);
+        $url = $route->getUrl();
+        if ($params) {
+            $url .= '?'.http_build_query($params);
+        }
+
+        return $url;
     }
 
     /**

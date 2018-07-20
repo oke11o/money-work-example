@@ -11,6 +11,12 @@ return [
         'uri' => '/login',
         'controller' => \App\Controller\LoginController::class,
         'action' => 'index',
+        'methods' => ['GET', 'POST'],
+    ],
+    'logout' => [
+        'uri' => '/logout',
+        'controller' => \App\Controller\LoginController::class,
+        'action' => 'logout',
         'methods' => ['GET'],
     ],
     'amount' => [

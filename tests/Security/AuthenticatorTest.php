@@ -2,17 +2,17 @@
 
 namespace App\Tests\Security;
 
+use App\Provider\UserProviderInterface;
 use App\Security\Authenticator;
 use App\Security\PasswordEncoder;
 use PHPUnit\Framework\TestCase;
 use App\Entity\User;
-use App\Provider\UserProvider;
 use Prophecy\Prophecy\ObjectProphecy;
 
 class AuthenticatorTest extends TestCase
 {
     /**
-     * @var UserProvider|ObjectProphecy
+     * @var UserProviderInterface|ObjectProphecy
      */
     private $userProvider;
     /**
@@ -26,7 +26,7 @@ class AuthenticatorTest extends TestCase
 
     public function setUp()
     {
-        $this->userProvider = $this->prophesize(UserProvider::class);
+        $this->userProvider = $this->prophesize(UserProviderInterface::class);
         $this->encoder = $this->prophesize(PasswordEncoder::class);
 
         $this->authenticator = new Authenticator($this->userProvider->reveal(), $this->encoder->reveal());

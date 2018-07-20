@@ -10,6 +10,6 @@ class AmountController extends BaseController
 {
     public function index(Request $request)
     {
-        return new Response('AmountController:index');
+        return $this->render('amount/index.html.twig');
     }
 }

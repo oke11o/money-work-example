@@ -10,11 +10,20 @@ use App\Exception\Kernel\KernelException;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
 use App\Kernel\Router\Router;
+use App\Provider\UserProvider;
+use App\Security\Authenticator;
+use App\Security\Authorizer;
+use App\Security\PasswordEncoder;
 use PDO;
 use PDOException;
 use Twig_Environment;
 use Twig_Loader_Filesystem;
 
+/**
+ * Class Kernel
+ * @package App\Kernel
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class Kernel
 {
     /**
@@ -130,7 +139,7 @@ class Kernel
 
             $controllerName = $controllerPair->getController();
             /** @var BaseController $controller */
-            $controller = new $controllerName($this->router, $this->templateEngine);
+            $controller = new $controllerName($this->router, $this->templateEngine, $this->container);
             $actionName = $controllerPair->getAction();
 
             return $controller->$actionName($request, $exception);
@@ -160,6 +169,7 @@ class Kernel
         $this->templateEngine->addExtension(new TwigExtension($this->router));
 
         $this->initDataMapper();
+        $this->initSecurity();
     }
 
     /**
@@ -265,5 +275,23 @@ class Kernel
     {
         //TODO: create validation
 //        throw new RouteValidationException();
+    }
+
+    private function initSecurity(): void
+    {
+        $userProvider = new UserProvider();
+        $this->container->add(UserProvider::class, $userProvider);
+
+        $encoder = new PasswordEncoder();
+        $this->container->add(PasswordEncoder::class, $encoder);
+
+        $authorizer = new Authorizer($userProvider);
+        $this->container->add(Authorizer::class, $authorizer);
+
+        $user = $authorizer->getAuthUser();
+        $this->container->add(User::class, $user);
+
+        $authenticator = new Authenticator($userProvider, $encoder);
+        $this->container->add(Authenticator::class, $authenticator);
     }
 }

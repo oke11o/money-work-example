@@ -5,7 +5,12 @@ namespace App\Provider;
 
 use App\Entity\User;
 
-class UserProvider
+/**
+ * Interface UserProviderInterface
+ * @package App\Provider
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
+class UserProvider implements UserProviderInterface
 {
     /**
      * @param $username
@@ -13,7 +18,7 @@ class UserProvider
      */
     public function findByUsername($username): ?User
     {
-        if ('username' === $username) {
+        if ('admin@admin.ru' === $username) {
             return $this->createTmpUser();
         }
     }
@@ -35,7 +40,9 @@ class UserProvider
     private function createTmpUser(): User
     {
         return (new User())
-            ->setEmail('username')
-            ->setId(1);
+            ->setEmail('admin@admin.ru')
+            ->setId(1)
+            ->setPassword('$2y$10$99ry9IrnRrF2kyyZxEo4WOj9iQItbYIpqeuaalosYxTr.l10ueeva')
+            ;
     }
 }

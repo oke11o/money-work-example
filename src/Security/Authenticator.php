@@ -5,7 +5,7 @@ namespace App\Security;
 use App\Entity\User;
 use App\Exception\Security\InvalidPasswordException;
 use App\Exception\Security\UserNotFoundException;
-use App\Provider\UserProvider;
+use App\Provider\UserProviderInterface;
 
 /**
  * Class Authenticator
@@ -16,7 +16,7 @@ use App\Provider\UserProvider;
 class Authenticator
 {
     /**
-     * @var UserProvider
+     * @var UserProviderInterface
      */
     private $userProvider;
     /**
@@ -24,7 +24,7 @@ class Authenticator
      */
     private $encoder;
 
-    public function __construct(UserProvider $userProvider, PasswordEncoder $encoder)
+    public function __construct(UserProviderInterface $userProvider, PasswordEncoder $encoder)
     {
         $this->userProvider = $userProvider;
         $this->encoder = $encoder;

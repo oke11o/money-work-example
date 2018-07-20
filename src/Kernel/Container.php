@@ -7,6 +7,11 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * Class Container
+ * @package App\Kernel
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class Container implements ContainerInterface
 {
     /**

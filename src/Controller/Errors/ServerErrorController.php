@@ -9,6 +9,9 @@ class ServerErrorController extends BaseController
 {
     public function index(Request $request, \Exception $exception)
     {
-        throw $exception;
+        return $this->render('errors/500.html.twig', [
+            'message' => $exception->getMessage(),
+            'trace' => $exception->getTraceAsString(),
+        ]);
     }
 }

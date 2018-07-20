@@ -3,7 +3,6 @@
 namespace App\Security;
 
 use App\Entity\User;
-use App\Kernel\ParameterBag;
 use App\Provider\UserProvider;
 
 /**
@@ -14,17 +13,12 @@ use App\Provider\UserProvider;
 class Authorizer
 {
     /**
-     * @var ParameterBag
-     */
-    private $session;
-    /**
      * @var UserProvider
      */
     private $userProvider;
 
-    public function __construct(ParameterBag $session, UserProvider $userProvider)
+    public function __construct(UserProvider $userProvider)
     {
-        $this->session = $session;
         $this->userProvider = $userProvider;
     }
 
@@ -33,7 +27,9 @@ class Authorizer
      */
     public function getAuthUser():?User
     {
-        $userId = $this->session->get($this->getSessionUserKey());
+        session_start();
+        $userId = $_SESSION[$this->getSessionUserKey()] ?? null;
+        session_write_close();
         if (!$userId) {
             return null;
         }
@@ -46,7 +42,16 @@ class Authorizer
      */
     public function saveUserToSession(User $user): void
     {
-        $this->session->set($this->getSessionUserKey(), $user->getId());
+        session_start();
+        $_SESSION[$this->getSessionUserKey()] = $user->getId();
+        session_write_close();
+    }
+
+    public function logout()
+    {
+        session_start();
+        unset($_SESSION[$this->getSessionUserKey()]);
+        session_write_close();
     }
 
     /**
