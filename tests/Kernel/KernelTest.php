@@ -65,7 +65,7 @@ class KernelTest extends TestCase
     {
         $this->markTestIncomplete();
 
-        $this->containerBuilder->create(Argument::type('string'), Argument::type('array'), Argument::type('array'))
+        $this->containerBuilder->create(Argument::type('string'), 'test', Argument::type('array'), Argument::type('array'))
             ->shouldBeCalled()->willReturn($this->container->reveal());
         $this->container->get(Router::class)->shouldBeCalled()->willReturn($this->router->reveal());
         $this->container->get(Twig_Environment::class)->shouldBeCalled()->willReturn($this->twig->reveal());

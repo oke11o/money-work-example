@@ -34,12 +34,12 @@ class ContainerBuilder
      * @param array $dbConfig
      * @return ContainerInterface
      */
-    public function create(string $rootDir, array $routes, array $dbConfig): ContainerInterface
+    public function create(string $rootDir, string $env, array $routes, array $dbConfig): ContainerInterface
     {
         $container = new Container();
 
         $this->initRouter($container, $routes);
-        $this->initTwig($container, $rootDir);
+        $this->initTwig($container, $rootDir, $env);
         $this->initDataMapper($container, $dbConfig);
         $this->initSecurity($container);
 
@@ -60,14 +60,18 @@ class ContainerBuilder
      * @param Container $container
      * @param string $rootDir
      */
-    private function initTwig(Container $container, string $rootDir)
+    private function initTwig(Container $container, string $rootDir, string $env = 'prod')
     {
         $loader = new Twig_Loader_Filesystem($rootDir.DIRECTORY_SEPARATOR.self::TEMPLATE_PATH);
+        $options = [];
+        if ($env === 'prod') {
+            $options['cache'] = $rootDir.DIRECTORY_SEPARATOR.self::TWIG_CACHE_DIR;
+        } else {
+            $options['cache'] = false;
+        }
         $twig = new Twig_Environment(
             $loader,
-            [
-                'cache' => $rootDir.DIRECTORY_SEPARATOR.self::TWIG_CACHE_DIR,
-            ]
+            $options
         );
         $twig->addExtension(new TwigExtension($container->get(Router::class)));
 

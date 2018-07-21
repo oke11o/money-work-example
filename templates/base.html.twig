@@ -27,9 +27,10 @@
                 <nav class="my-2 my-md-0 mr-md-3">
                     <a class="p-2 text-dark" href="{{ path('amount') }}">Amount</a>
                 </nav>
-            {% endif %}
-            {% if user %}
-                <a class="btn btn-outline-primary" href="{{ path('logout') }}">Logout</a>
+                <div class="btn-group" role="group" >
+                    <span class="btn btn-secondary">{{  user.email }}</span>
+                    <a class="btn btn-outline-primary" href="{{ path('logout') }}">Logout</a>
+                </div>
             {% else %}
                 <a class="btn btn-outline-primary" href="{{ path('login') }}">Sign up</a>
             {% endif %}

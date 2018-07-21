@@ -55,6 +55,10 @@ class Kernel
      * @var ContainerBuilder
      */
     private $containerBuilder;
+    /**
+     * @var string
+     */
+    private $environment;
 
     public function __construct($rootDir = '', $environment = 'prod', ContainerBuilder $containerBuilder)
     {
@@ -63,9 +67,10 @@ class Kernel
             $this->rootDir = dirname(dirname(__DIR__));
         }
         $this->configDir = 'config';
+        $this->environment = $environment;
 
         $this->routesFilename = 'routes.php';
-        if ('prod' == $environment) {
+        if (\in_array($environment, ['prod', 'dev'])) {
             $this->configName = 'config.php';
             $this->configLocalName = 'config_local.php';
         } else {
@@ -151,7 +156,7 @@ class Kernel
     private function buildContainer(): void
     {
         //TODO: need DI
-        $this->container = $this->containerBuilder->create($this->rootDir, $this->routes, $this->config->get('db'));
+        $this->container = $this->containerBuilder->create($this->rootDir, $this->environment, $this->routes, $this->config->get('db'));
     }
 
     /**
