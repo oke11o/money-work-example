@@ -30,7 +30,7 @@ class Request
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getPost()
     {

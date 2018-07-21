@@ -25,6 +25,12 @@ return [
         'action' => 'index',
         'methods' => ['GET'],
     ],
+    'donate' => [
+        'uri' => '/donate',
+        'controller' => \App\Controller\AmountController::class,
+        'action' => 'donate',
+        'methods' => ['POST'],
+    ],
     '_default' => 'home',
     '400' => [
         'controller' => \App\Controller\Errors\NotFoundController::class,

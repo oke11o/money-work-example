@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Kernel\Http\RedirectResponse;
 use App\Kernel\Http\Response;
 use App\Kernel\Router\Router;
+use App\Security\Authorizer;
 use Psr\Container\ContainerInterface;
 use Twig_Environment;
 
@@ -28,6 +29,10 @@ abstract class BaseController
      * @var ContainerInterface
      */
     protected $container;
+    /**
+     * @var User
+     */
+    private $user = false;
 
     /**
      * BaseController constructor.
@@ -83,9 +88,13 @@ abstract class BaseController
      */
     protected function getUser(): ?User
     {
-        if ($this->container->has(User::class)) {
-            return $this->container->get(User::class);
+        if (false === $this->user) {
+            /** @var Authorizer $authorizer */
+            $authorizer = $this->container->get(Authorizer::class);
+            $this->user = $authorizer->getAuthUser();
         }
+
+        return $this->user;
     }
 
     /**

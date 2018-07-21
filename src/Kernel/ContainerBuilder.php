@@ -7,6 +7,7 @@ use App\Entity\Transaction;
 use App\Entity\User;
 use App\Exception\Kernel\KernelException;
 use App\Kernel\Router\Router;
+use App\Manager\UserManager;
 use App\Provider\UserProvider;
 use App\Provider\UserProviderInterface;
 use App\Security\Authenticator;
@@ -42,6 +43,7 @@ class ContainerBuilder
         $this->initTwig($container, $rootDir, $env);
         $this->initDataMapper($container, $dbConfig);
         $this->initSecurity($container);
+        $this->initUserManager($container);
 
         return $container;
     }
@@ -101,7 +103,10 @@ class ContainerBuilder
      */
     private function initSecurity(Container $container)
     {
-        $userProvider = new UserProvider();
+        /** @var MapperRepository $mapperRepository */
+        $mapperRepository = $container->get(MapperRepository::class);
+
+        $userProvider = new UserProvider($mapperRepository->getMapper(User::class));
         $container->add(UserProviderInterface::class, $userProvider);
 
         $encoder = new PasswordEncoder();
@@ -109,9 +114,6 @@ class ContainerBuilder
 
         $authorizer = new Authorizer($userProvider);
         $container->add(Authorizer::class, $authorizer);
-
-        $user = $authorizer->getAuthUser();
-        $container->add(User::class, $user);
 
         $authenticator = new Authenticator($userProvider, $encoder);
         $container->add(Authenticator::class, $authenticator);
@@ -125,8 +127,9 @@ class ContainerBuilder
     private function createPdo($config): PDO
     {
         try {
+            $dbl = sprintf('mysql:host=%s;dbname=%s', $config['host'], $config['name']);
             $pdo = new PDO(
-                sprintf('mysql:host=%s;dbname=%s', $config['host'], $config['name']),
+                $dbl,
                 $config['user'],
                 $config['password']
             );
@@ -136,5 +139,15 @@ class ContainerBuilder
         }
 
         return $pdo;
+    }
+
+    /**
+     * @param Container $container
+     */
+    private function initUserManager(Container $container)
+    {
+        $mapperRepositore = $container->get(MapperRepository::class);
+        $userManager = new UserManager($mapperRepositore->getMapper(User::class));
+        $container->add(UserManager::class, $userManager);
     }
 }

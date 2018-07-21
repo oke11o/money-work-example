@@ -105,6 +105,14 @@ class Kernel
     }
 
     /**
+     * @return string
+     */
+    public function getRootDir(): string
+    {
+        return $this->rootDir;
+    }
+
+    /**
      * @param Request $request
      * @return Response
      */

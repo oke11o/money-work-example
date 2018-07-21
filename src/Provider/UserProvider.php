@@ -3,26 +3,33 @@
 
 namespace App\Provider;
 
+use App\DataMapper\UserMapper;
 use App\Entity\User;
 
 /**
- * Interface UserProviderInterface
+ * Class UserProvider
  * @package App\Provider
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
  */
 class UserProvider implements UserProviderInterface
 {
+
+    /**
+     * @var UserMapper
+     */
+    private $userMapper;
+
+    public function __construct(UserMapper $userMapper)
+    {
+        $this->userMapper = $userMapper;
+    }
     /**
      * @param $username
      * @return User|null
      */
     public function findByUsername($username): ?User
     {
-        if ('admin@admin.ru' === $username) {
-            return $this->createTmpUser();
-        }
-
-        return null;
+        return $this->userMapper->findOneByEmail($username);
     }
 
     /**
@@ -31,11 +38,7 @@ class UserProvider implements UserProviderInterface
      */
     public function find(int $id): ?User
     {
-        if (1 === $id) {
-            return $this->createTmpUser();
-        }
-
-        return null;
+        return $this->userMapper->find($id);
     }
 
     /**

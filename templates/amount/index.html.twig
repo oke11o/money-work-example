@@ -10,6 +10,35 @@
         <h1 class="display-4">Amount</h1>
         <p class="lead"></p>
     </div>
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <div class="card" style="width: 18rem;margin:auto;">
+            {% if successMessage %}
+                <div class="alert alert-success" role="alert">
+                    Thank you for your donate!
+                </div>
+            {% endif %}
+            {% if errorMessage %}
+                <div class="alert alert-danger" role="alert">
+                    {{ errorMessage }}
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">Dear, {{ user.email }}!</h5>
+                <p class="card-text">You have {{ user.amount|money }} in your account!</p>
+                <p class="card-text">Do you want to donate to Wikipedia?</p>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ path('donate') }}">
+                    <div class="form-group error">
+                        <label for="donate">How much?</label>
+                        <input type="text" class="form-control" id="donate" name="donate">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Donate!</button>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascript %}

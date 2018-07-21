@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Money\Money;
+
 class User
 {
     /**
@@ -18,6 +20,16 @@ class User
      * @var string
      */
     private $password = '';
+
+    /**
+     * @var Money
+     */
+    private $amount;
+
+    public function __construct()
+    {
+        $this->amount = Money::RUB(0);
+    }
 
     /**
      * @return int
@@ -75,6 +87,26 @@ class User
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return Money
+     */
+    public function getAmount(): Money
+    {
+        return $this->amount;
+    }
+
+    /**
+     * @param Money $amount
+     *
+     * @return self
+     */
+    public function setAmount(Money $amount): self
+    {
+        $this->amount = $amount;
 
         return $this;
     }

@@ -42,7 +42,7 @@ class LoginController extends BaseController
             }
         }
 
-        return $this->render('login/index.html.twig', ['errors' => $errors]);
+        return $this->render('login/index.html.twig', ['errors' => $errors, 'post' => $post]);
     }
 
     /**

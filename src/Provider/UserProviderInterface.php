@@ -5,7 +5,7 @@ namespace App\Provider;
 use App\Entity\User;
 
 /**
- * Class UserProviderInterface
+ * Interface UserProviderInterface
  * @package App\Provider
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
  */
