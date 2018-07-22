@@ -40,28 +40,14 @@ class AmountController extends BaseController
      */
     public function donate(Request $request): Response
     {
-        $post = $request->getPost();
-        if (!$post) {
-            $message = 'Empty fields';
-
-            return $this->redirectToRoute('amount', ['error_message' => $message]);
-        }
-
-        $donate = str_replace(',','.', $post['donate']) ?? 0;
-        $donate = (float)$donate;
+        [$donate, $message] = $this->getDonateParam($request);
         if (!$donate) {
-            $message = 'Null donate';
-
             return $this->redirectToRoute('amount', ['error_message' => $message]);
         }
-
-        $donate = Money::RUB(100 * $donate);
 
         $user = $this->getUser();
         if (!$user) {
-            $message = 'User not authorized';
-
-            return $this->redirectToRoute('amount', ['error_message' => $message]);
+            return $this->redirectToRoute('amount', ['error_message' => 'User not authorized']);
         }
 
         /** @var UserManager $userManager */
@@ -70,12 +56,32 @@ class AmountController extends BaseController
             $userManager->withdraw($user, $donate);
             $message = 'success';
         } catch (UserManagerException $exception) {
-            $message = $exception->getMessage();
-
-            return $this->redirectToRoute('amount', ['error_message' => $message]);
+            return $this->redirectToRoute('amount', ['error_message' => $exception->getMessage()]);
         }
 
         return $this->redirectToRoute('amount', ['message' => $message]);
 
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    private function getDonateParam(Request $request): array
+    {
+        $post = $request->getPost();
+        if (!$post) {
+            return [null, 'Empty fields'];
+        }
+
+        $donate = str_replace(',','.', ($post['donate'] ?? '0'));
+        $donate = (float)$donate;
+        if (!$donate) {
+            return [null, 'Null donate'];
+        }
+
+        $donate = Money::RUB(100 * $donate);
+
+        return [$donate, null];
     }
 }

@@ -32,6 +32,7 @@ class LoginController extends BaseController
                 /** @var Authenticator */
                 $authenticator = $this->container->get(Authenticator::class);
                 $user = $authenticator->authenticate($post['email'], $post['password']);
+
                 /** @var Authorizer $authorizer */
                 $authorizer = $this->container->get(Authorizer::class);
                 $authorizer->saveUserToSession($user);

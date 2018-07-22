@@ -13,7 +13,6 @@ use App\Entity\User;
  */
 class UserProvider implements UserProviderInterface
 {
-
     /**
      * @var UserMapper
      */
@@ -39,17 +38,5 @@ class UserProvider implements UserProviderInterface
     public function find(int $id): ?User
     {
         return $this->userMapper->find($id);
-    }
-
-    /**
-     * @return User
-     */
-    private function createTmpUser(): User
-    {
-        return (new User())
-            ->setEmail('admin@admin.ru')
-            ->setId(1)
-            ->setPassword('$2y$10$99ry9IrnRrF2kyyZxEo4WOj9iQItbYIpqeuaalosYxTr.l10ueeva')
-            ;
     }
 }
