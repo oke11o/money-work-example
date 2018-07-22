@@ -47,7 +47,7 @@ class AmountController extends BaseController
             return $this->redirectToRoute('amount', ['error_message' => $message]);
         }
 
-        $donate = $post['donate'] ?? 0;
+        $donate = str_replace(',','.', $post['donate']) ?? 0;
         $donate = (float)$donate;
         if (!$donate) {
             $message = 'Null donate';
@@ -71,9 +71,9 @@ class AmountController extends BaseController
             $message = 'success';
         } catch (UserManagerException $exception) {
             $message = $exception->getMessage();
+
+            return $this->redirectToRoute('amount', ['error_message' => $message]);
         }
-
-
 
         return $this->redirectToRoute('amount', ['message' => $message]);
 

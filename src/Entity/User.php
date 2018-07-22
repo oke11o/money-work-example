@@ -4,6 +4,11 @@ namespace App\Entity;
 
 use Money\Money;
 
+/**
+ * Class User
+ * @package App\Entity
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class User
 {
     /**

@@ -4,6 +4,11 @@ namespace App\DataMapper;
 
 use PDO;
 
+/**
+ * Class AbstractMapper
+ * @package App\DataMapper
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class AbstractMapper implements MapperInterface
 {
     /**

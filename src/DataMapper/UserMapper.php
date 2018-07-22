@@ -49,18 +49,29 @@ class UserMapper extends AbstractMapper
     /**
      * @param User $user
      * @param Money $money
+     * @return null|string
      */
-    public function withdraw(User $user, Money $money)
+    public function withdraw(User $user, Money $money): ?string
     {
-        $table = self::TABLE;
-        $sql = "UPDATE {$table} SET amount=amount-:donate WHERE id=:id";
-        $statement = $this->pdo->prepare($sql);
-        $amount = $money->getAmount();
-        $statement->bindParam(':donate', $amount);
-        $id = $user->getId();
-        $statement->bindParam(':id', $id);
-        $statement->execute();
+        $this->begin();
+        $error = null;
+        try {
+            $currentAmount = $this->checkForUpdate($user);
+            /** @var Money $currentMoney */
+            $currentMoney = Money::RUB($currentAmount);
+            if ($currentMoney->greaterThanOrEqual($money)) {
 
+                $this->doWithdraw($user, $money);
+                $user->setAmount($user->getAmount()->subtract($money));
+            } else {
+                $error = 'Not enouth money';
+            }
+        } catch (\Exception $exception) {
+            $error = $exception->getMessage();
+        }
+        $this->commit();
+
+        return $error;
     }
 
     /**
@@ -74,5 +85,44 @@ class UserMapper extends AbstractMapper
             ->setEmail($data['email'])
             ->setPassword($data['password'])
             ->setAmount(Money::RUB($data['amount']));
+    }
+
+    private function begin()
+    {
+        $sql = 'BEGIN;';
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute();
+    }
+
+    private function commit()
+    {
+        $sql = 'COMMIT;';
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute();
+    }
+
+    private function checkForUpdate(User $user)
+    {
+        $table = self::TABLE;
+        $id = $user->getId();
+        $sql = "SELECT amount FROM {$table} WHERE id=:id FOR UPDATE;";
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindParam(':id', $id);
+        $statement->execute();
+
+        return $statement->fetchColumn();
+    }
+
+    private function doWithdraw(User $user, Money $money)
+    {
+        $table = self::TABLE;
+        $amount = $money->getAmount();
+        $id = $user->getId();
+
+        $sql = "UPDATE {$table} SET amount=amount-:donate WHERE id=:id";
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindParam(':donate', $amount);
+        $statement->bindParam(':id', $id);
+        $statement->execute();
     }
 }

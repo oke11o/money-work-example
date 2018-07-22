@@ -27,17 +27,17 @@ class UserManager
     /**
      * @param User $user
      * @param Money $money
+     * @throws UserManagerException
      */
-    public function withdraw(User $user, Money $money)
+    public function withdraw(User $user, Money $money): void
     {
         if ($user->getAmount()->lessThan($money)) {
             throw new UserManagerException('Not enough money');
         }
 
-        $this->userMapper->withdraw($user, $money);
-
-        $user->getAmount()->subtract($money);
-
-        return true;
+        $error = $this->userMapper->withdraw($user, $money);
+        if ($error) {
+            throw new UserManagerException($error);
+        }
     }
 }

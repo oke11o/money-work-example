@@ -2,6 +2,11 @@
 
 namespace App\Entity;
 
+/**
+ * Class Transaction
+ * @package App\Entity
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class Transaction
 {
     /**
@@ -15,7 +20,7 @@ class Transaction
     private $userId;
 
     /**
-     * @var int 
+     * @var int
      */
     private $amount = 0;
 
