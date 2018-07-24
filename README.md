@@ -6,6 +6,10 @@ Use built-in php server.
 ```bash
 php -S 127.0.0.1:8080 -t public public/index.php
 ```
+or user alias for 8081 port
+```bash
+composer serve
+```
 
 Or you can use your server.
 
