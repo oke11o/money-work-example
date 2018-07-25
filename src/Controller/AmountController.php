@@ -2,13 +2,10 @@
 
 namespace App\Controller;
 
-use App\Enum\AvailableCurrencyEnum;
+use App\Entity\User;
 use App\Exception\Manager\UserManagerException;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
-use App\Manager\UserManager;
-use Money\Currency;
-use Money\Money;
 
 /**
  * Class AmountController
@@ -45,52 +42,38 @@ class AmountController extends BaseController
     /**
      * @param Request $request
      * @return \App\Kernel\Http\RedirectResponse
+     *
+     * @throws \InvalidArgumentException
+     * @throws \Psr\Container\ContainerExceptionInterface
      */
     public function donate(Request $request): Response
     {
-        [$donate, $message] = $this->getDonateParam($request);
-        if (!$donate) {
-            return $this->redirectToRoute('amount', ['error_message' => $message]);
-        }
-
-        $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('amount', ['error_message' => 'User not authorized']);
-        }
-
-        /** @var UserManager $userManager */
-        $userManager = $this->container->get(UserManager::class);
         try {
-            $userManager->withdraw($user, $donate);
-            $message = 'success';
-        } catch (UserManagerException $exception) {
+            $user = $this->getUserOrThrow();
+
+            $donate = $this->getDonateRequestParser()->parse($request);
+
+            $this->getUserManager()->withdraw($user, $donate);
+        } catch (UserManagerException|\RuntimeException $exception) {
             return $this->redirectToRoute('amount', ['error_message' => $exception->getMessage()]);
         }
 
-        return $this->redirectToRoute('amount', ['message' => $message]);
+        return $this->redirectToRoute('amount', ['message' => 'success']);
 
     }
 
     /**
-     * @param Request $request
-     * @return array
-     * //TODO:
+     * @return User
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    private function getDonateParam(Request $request): array
+    private function getUserOrThrow(): User
     {
-        $post = $request->getPost();
-        if (!$post) {
-            return [null, 'Empty fields'];
+        $user = $this->getUser();
+        if (!$user) {
+            throw new \RuntimeException('User not authorized');
         }
 
-        $donate = str_replace(',', '.', ($post['donate'] ?? '0'));
-        $donate = (float)$donate;
-        if (!$donate) {
-            return [null, 'Null donate'];
-        }
-
-        $donate = new Money(100 * $donate, new Currency(AvailableCurrencyEnum::RUB));
-
-        return [$donate, null];
+        return $user;
     }
 }

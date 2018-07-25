@@ -11,7 +11,6 @@ abstract class AbstractEnum
 {
     /**
      * @return array
-     * @throws \ReflectionException
      */
     public static function getValues(): array
     {

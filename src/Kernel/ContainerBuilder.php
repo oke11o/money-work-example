@@ -6,10 +6,12 @@ use App\DataMapper\MapperRepository;
 use App\Entity\Transaction;
 use App\Entity\User;
 use App\Exception\Kernel\KernelException;
+use App\Factory\MoneyFactory;
 use App\Kernel\Router\Router;
 use App\Manager\UserManager;
 use App\Provider\UserProvider;
 use App\Provider\UserProviderInterface;
+use App\RequestParser\DonateRequestParser;
 use App\Security\Authenticator;
 use App\Security\Authorizer;
 use App\Security\PasswordEncoder;
@@ -41,6 +43,8 @@ class ContainerBuilder
 
         $this->initRouter($container, $routes);
         $this->initTwig($container, $rootDir, $env);
+        $this->initMoneyFactory($container);
+        $this->initRequestParser($container);
         $this->initDataMapper($container, $dbConfig);
         $this->initSecurity($container);
         $this->initUserManager($container);
@@ -78,6 +82,24 @@ class ContainerBuilder
         $twig->addExtension(new TwigExtension($container->get(Router::class)));
 
         $container->add(Twig_Environment::class, $twig);
+    }
+
+    /**
+     * @param Container $container
+     */
+    private function initMoneyFactory(Container $container)
+    {
+        $container->add(MoneyFactory::class, new MoneyFactory());
+    }
+
+    /**
+     * @param Container $container
+     */
+    private function initRequestParser(Container $container)
+    {
+        /** @var MoneyFactory $moneyFactory */
+        $moneyFactory = $container->get(MoneyFactory::class);
+        $container->add(DonateRequestParser::class, new DonateRequestParser($moneyFactory));
     }
 
     /**

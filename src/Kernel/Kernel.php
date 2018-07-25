@@ -129,10 +129,8 @@ class Kernel
     {
         $this->boot();
 
-        /** @var Twig_Environment $twig */
-        $twig = $this->container->get(Twig_Environment::class);
-        /** @var Router $router */
-        $router = $this->container->get(Router::class);
+        $twig = $this->getTwig();
+        $router = $this->getRouter();
 
         $controllerPair = $router->match($request);
 
@@ -257,5 +255,25 @@ class Kernel
     {
         //TODO: create validation
 //        throw new RouteValidationException();
+    }
+
+    /**
+     * @return Router
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private function getRouter(): Router
+    {
+        return $this->container->get(Router::class);
+    }
+
+    /**
+     * @return Twig_Environment
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private function getTwig(): Twig_Environment
+    {
+        return $this->container->get(Twig_Environment::class);
     }
 }

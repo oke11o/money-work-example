@@ -6,6 +6,9 @@ use App\Entity\User;
 use App\Kernel\Http\RedirectResponse;
 use App\Kernel\Http\Response;
 use App\Kernel\Router\Router;
+use App\Manager\UserManager;
+use App\RequestParser\DonateRequestParser;
+use App\Security\Authenticator;
 use App\Security\Authorizer;
 use Psr\Container\ContainerInterface;
 use Twig_Environment;
@@ -89,8 +92,7 @@ abstract class BaseController
     protected function getUser(): ?User
     {
         if (false === $this->user) {
-            /** @var Authorizer $authorizer */
-            $authorizer = $this->container->get(Authorizer::class);
+            $authorizer = $this->getAuthorizer();
             $this->user = $authorizer->getAuthUser();
         }
 
@@ -105,5 +107,45 @@ abstract class BaseController
         return [
             'user' => $this->getUser(),
         ];
+    }
+
+    /**
+     * @return Authorizer
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    protected function getAuthorizer(): Authorizer
+    {
+        return $this->container->get(Authorizer::class);
+    }
+
+    /**
+     * @return Authenticator
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    protected function getAuthenticator(): Authenticator
+    {
+        return $this->container->get(Authenticator::class);
+    }
+
+    /**
+     * @return UserManager
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    protected function getUserManager(): UserManager
+    {
+        return $this->container->get(UserManager::class);
+    }
+
+    /**
+     * @return DonateRequestParser
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    protected function getDonateRequestParser(): DonateRequestParser
+    {
+        return $this->container->get(DonateRequestParser::class);
     }
 }

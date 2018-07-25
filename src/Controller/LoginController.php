@@ -5,8 +5,6 @@ namespace App\Controller;
 use App\Exception\Security\InvalidFormKeysException;
 use App\Exception\Security\SecurityException;
 use App\Kernel\Http\Request;
-use App\Security\Authenticator;
-use App\Security\Authorizer;
 
 /**
  * Class LoginController
@@ -35,13 +33,9 @@ class LoginController extends BaseController
                 if (!isset($post['email'], $post['password'])) {
                     throw new InvalidFormKeysException('Require next form fields: "email", "password"');
                 }
-                /** @var Authenticator */
-                $authenticator = $this->container->get(Authenticator::class);
-                $user = $authenticator->authenticate($post['email'], $post['password']);
+                $user = $this->getAuthenticator()->authenticate($post['email'], $post['password']);
 
-                /** @var Authorizer $authorizer */
-                $authorizer = $this->container->get(Authorizer::class);
-                $authorizer->saveUserToSession($user);
+                $this->getAuthorizer()->saveUserToSession($user);
 
                 return $this->redirectToRoute('amount');
             } catch (SecurityException $e) {
@@ -55,14 +49,13 @@ class LoginController extends BaseController
     /**
      * @param Request $request
      * @return \App\Kernel\Http\RedirectResponse
+     * @throws \Exception
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
     public function logout(Request $request)
     {
-        /** @var Authorizer $authorizer */
-        $authorizer = $this->container->get(Authorizer::class);
-        $authorizer->logout();
+        $this->getAuthorizer()->logout();
 
         return $this->redirectToRoute('home');
     }
