@@ -5,11 +5,14 @@ namespace App\Provider;
 
 use App\DataMapper\UserMapper;
 use App\Entity\User;
+use DI\Annotation\Injectable;
 
 /**
  * Class UserProvider
  * @package App\Provider
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class UserProvider implements UserProviderInterface
 {

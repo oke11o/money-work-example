@@ -6,11 +6,14 @@ use App\Exception\Kernel\KernelException;
 use App\Exception\Router\NotFoundControllerException;
 use App\Exception\Router\NotFoundRouteException;
 use App\Kernel\Http\Request;
+use DI\Annotation\Injectable;
 
 /**
  * Class Router
  * @package App\Kernel\Router
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class Router
 {

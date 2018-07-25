@@ -2,7 +2,6 @@
 
 namespace App\Tests\Kernel;
 
-use App\Kernel\ContainerBuilder;
 use App\Kernel\Http\Request;
 use App\Kernel\Kernel;
 use App\Kernel\Router\Router;
@@ -19,10 +18,6 @@ class KernelTest extends TestCase
      */
     private $kernel;
     /**
-     * @var ContainerBuilder|ObjectProphecy
-     */
-    private $containerBuilder;
-    /**
      * @var ContainerInterface|ObjectProphecy
      */
     private $container;
@@ -38,8 +33,7 @@ class KernelTest extends TestCase
     public function setUp()
     {
         $this->container = $this->prophesize(ContainerInterface::class);
-        $this->containerBuilder = $this->prophesize(ContainerBuilder::class);
-        $this->kernel = new Kernel('test', $this->containerBuilder->reveal());
+        $this->kernel = new Kernel('test');
 
         $this->router = $this->prophesize(Router::class);
         $this->twig = $this->prophesize(Twig_Environment::class);
@@ -51,7 +45,7 @@ class KernelTest extends TestCase
     public function configFilePaths()
     {
         $root = dirname(dirname(__DIR__));
-        $kernel = new Kernel('test', $this->containerBuilder->reveal());
+        $kernel = new Kernel('test');
 
         $this->assertEquals($root.'/config/config.php', $kernel->getConfigFilePath());
         $this->assertEquals($root.'/config/config_test.php', $kernel->getEnvConfigFilePath());

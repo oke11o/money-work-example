@@ -3,6 +3,8 @@
 namespace App\Kernel;
 
 use App\Kernel\Router\Router;
+use DI\Annotation\Inject;
+use DI\Annotation\Injectable;
 use Money\Money;
 use Twig_Extension;
 use Twig_SimpleFunction;
@@ -13,6 +15,8 @@ use Money\Formatter\IntlMoneyFormatter;
  * Class TwigExtension
  * @package App\Kernel
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable()
  */
 class TwigExtension extends Twig_Extension
 {

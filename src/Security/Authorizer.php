@@ -4,11 +4,14 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Provider\UserProvider;
+use DI\Annotation\Injectable;
 
 /**
  * Class Authorizer
  * @package App\Security
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class Authorizer
 {

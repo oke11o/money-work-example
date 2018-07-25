@@ -2,13 +2,11 @@
 
 namespace App\Kernel;
 
-use App\Controller\BaseController;
 use App\Controller\Errors\ServerErrorController;
 use App\Exception\Kernel\KernelException;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
 use App\Kernel\Router\Router;
-use App\RequestParser\DonateRequestParser;
 use Psr\Container\ContainerInterface;
 use Twig_Environment;
 
@@ -19,6 +17,12 @@ use Twig_Environment;
  */
 class Kernel
 {
+    public const ENV_PROD = 'prod';
+    public const DI_CONFIG_KEY_ROUTES = 'di.config.routes';
+    public const DI_CONFIG_KEY_DB = 'di.config.db';
+    public const DI_CONFIG_KEY_TEMPLATE_PATH = 'di.config.templatePath';
+    public const DI_CONFIG_KEY_TEMPLATE_CACHE_PATH = 'di.config.templateCachePath';
+    public const DI_CONFIG_KEY_ENV = 'di.config.env';
     /**
      * @var ParameterBag
      */
@@ -56,15 +60,11 @@ class Kernel
      */
     private $routesFilename ;
     /**
-     * @var ContainerBuilder
-     */
-    private $containerBuilder;
-    /**
      * @var string
      */
     private $environment;
 
-    public function __construct($environment = 'prod', ContainerBuilder $containerBuilder)
+    public function __construct($environment = 'prod')
     {
         $this->rootDir = dirname(dirname(__DIR__));
         $this->environment = $environment;
@@ -79,7 +79,6 @@ class Kernel
         } else {
             $this->localConfigName = 'config_local.php';
         }
-        $this->containerBuilder = $containerBuilder;
     }
 
     /**
@@ -149,11 +148,6 @@ class Kernel
         }
     }
 
-    /**
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws KernelException
-     */
     private function boot(): void
     {
         $this->parseConfig();
@@ -165,15 +159,30 @@ class Kernel
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      * @throws KernelException
+     * @throws \Exception
      */
     private function buildContainer(): void
     {
-        $this->container = $this->containerBuilder->create(
-            $this->rootDir,
-            $this->environment,
-            $this->routes,
-            $this->config->get('db')
-        );
+        if (self::ENV_PROD === $this->environment) {
+            $builder = new \DI\ContainerBuilder();
+            $builder->enableCompilation($this->rootDir . '/var');
+            $builder->writeProxiesToFile(true, $this->rootDir . '/var/proxies');
+        } else {
+            $builder = new \DI\ContainerBuilder();
+        }
+
+        $builder->useAnnotations(true);
+        $builder->addDefinitions([
+            self::DI_CONFIG_KEY_ROUTES => $this->routes,
+            self::DI_CONFIG_KEY_DB => $this->config->get('db'),
+            self::DI_CONFIG_KEY_TEMPLATE_PATH => $this->rootDir.'/templates',
+            self::DI_CONFIG_KEY_TEMPLATE_CACHE_PATH => $this->rootDir.'/var/cache/twig',
+            self::DI_CONFIG_KEY_ENV => $this->environment,
+        ]);
+        $builder->addDefinitions($this->rootDir.DIRECTORY_SEPARATOR.$this->configDir.DIRECTORY_SEPARATOR.'services.php');
+        $container = $builder->build();
+
+        $this->container = $container;
     }
 
     /**
@@ -253,26 +262,6 @@ class Kernel
     }
 
     /**
-     * @return Router
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    private function getRouter(): Router
-    {
-        return $this->container->get(Router::class);
-    }
-
-    /**
-     * @return Twig_Environment
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    private function getTwig(): Twig_Environment
-    {
-        return $this->container->get(Twig_Environment::class);
-    }
-
-    /**
      * @param $controllerName
      * @return object
      *
@@ -339,5 +328,25 @@ class Kernel
         }
 
         return $args;
+    }
+
+    /**
+     * @return Router
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private function getRouter(): Router
+    {
+        return $this->container->get(Router::class);
+    }
+
+    /**
+     * @return Twig_Environment
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private function getTwig(): Twig_Environment
+    {
+        return $this->container->get(Twig_Environment::class);
     }
 }

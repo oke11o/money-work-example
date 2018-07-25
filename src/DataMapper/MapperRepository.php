@@ -3,11 +3,14 @@
 namespace App\DataMapper;
 
 use App\Exception\DataMapper\MapperNotFoundException;
+use DI\Annotation\Injectable;
 
 /**
  * Class MapperRepository
  * @package App\DataMapper
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class MapperRepository
 {

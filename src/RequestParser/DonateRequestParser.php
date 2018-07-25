@@ -5,12 +5,15 @@ namespace App\RequestParser;
 use App\Enum\AvailableCurrencyEnum;
 use App\Factory\MoneyFactory;
 use App\Kernel\Http\Request;
+use DI\Annotation\Injectable;
 use Money\Money;
 
 /**
  * Class DonateRequestParser
  * @package App\RequestParser
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class DonateRequestParser
 {

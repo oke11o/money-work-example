@@ -6,12 +6,15 @@ use App\Entity\User;
 use App\Exception\Security\InvalidPasswordException;
 use App\Exception\Security\UserNotFoundException;
 use App\Provider\UserProviderInterface;
+use DI\Annotation\Injectable;
 
 /**
  * Class Authenticator
  * @package App\Security
  *
  * @author  Sergey Koksharov <info@sharoff.org>
+ *
+ * @Injectable(lazy=true)
  */
 class Authenticator
 {

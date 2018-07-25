@@ -2,10 +2,14 @@
 
 namespace App\Security;
 
+use DI\Annotation\Injectable;
+
 /**
  * Class PasswordEncoder
  * @package App\Security
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class PasswordEncoder
 {

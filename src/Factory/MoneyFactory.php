@@ -4,6 +4,7 @@ namespace App\Factory;
 
 use App\Dictionary\CurrencyUnitsDictionary;
 use App\Enum\AvailableCurrencyEnum;
+use DI\Annotation\Injectable;
 use Money\Currency;
 use Money\Money;
 
@@ -11,6 +12,8 @@ use Money\Money;
  * Class MoneyFactory
  * @package App\Factory
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class MoneyFactory
 {
@@ -29,6 +32,6 @@ class MoneyFactory
 
         $mul = 10 ** CurrencyUnitsDictionary::UNITS[$currency];
 
-        return new Money($mul * $amount, new Currency($currency));
+        return new Money((int)($mul * $amount), new Currency($currency));
     }
 }

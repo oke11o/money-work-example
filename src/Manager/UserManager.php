@@ -5,12 +5,15 @@ namespace App\Manager;
 use App\DataMapper\UserMapper;
 use App\Entity\User;
 use App\Exception\Manager\UserManagerException;
+use DI\Annotation\Injectable;
 use Money\Money;
 
 /**
  * Class UserManager
  * @package App\Manager
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ *
+ * @Injectable(lazy=true)
  */
 class UserManager
 {
