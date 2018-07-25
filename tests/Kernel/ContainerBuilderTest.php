@@ -18,8 +18,7 @@ class ContainerBuilderTest extends \PHPUnit\Framework\TestCase
     {
         $builder = new ContainerBuilder();
 
-        $rootDir = dirname(dirname(__DIR__));
-        $kernel = new Kernel($rootDir, 'test', $builder);
+        $kernel = new Kernel('test', $builder);
 
         $config = include $kernel->getConfigFilePath();
         if (\file_exists($kernel->getLocalConfigFilePath())) {

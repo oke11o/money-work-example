@@ -12,6 +12,8 @@ use App\Kernel\Http\Request;
  */
 class NotFoundController extends BaseController
 {
+    public const ACTION_NAME_404 = '404';
+
     /**
      * @param Request $request
      * @return \App\Kernel\Http\Response

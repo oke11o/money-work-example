@@ -31,10 +31,6 @@ class UserManager
      */
     public function withdraw(User $user, Money $money): void
     {
-        if ($user->getAmount()->lessThan($money)) {
-            throw new UserManagerException('Not enough money');
-        }
-
         $error = $this->userMapper->withdraw($user, $money);
         if ($error) {
             throw new UserManagerException($error);

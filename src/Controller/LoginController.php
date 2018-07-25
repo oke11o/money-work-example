@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Exception\Security\InvalidFormKeysException;
 use App\Exception\Security\SecurityException;
 use App\Kernel\Http\Request;
 use App\Security\Authenticator;
@@ -14,6 +15,8 @@ use App\Security\Authorizer;
  */
 class LoginController extends BaseController
 {
+    public const ACTION_NAME_LOGIN = 'login';
+    public const ACTION_NAME_LOGOUT = 'logout';
     /**
      * @param Request $request
      * @return \App\Kernel\Http\RedirectResponse|\App\Kernel\Http\Response
@@ -29,6 +32,9 @@ class LoginController extends BaseController
         $errors = '';
         if (!empty($post)) {
             try {
+                if (!isset($post['email'], $post['password'])) {
+                    throw new InvalidFormKeysException('Require next form fields: "email", "password"');
+                }
                 /** @var Authenticator */
                 $authenticator = $this->container->get(Authenticator::class);
                 $user = $authenticator->authenticate($post['email'], $post['password']);

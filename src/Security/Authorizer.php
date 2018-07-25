@@ -12,6 +12,7 @@ use App\Provider\UserProvider;
  */
 class Authorizer
 {
+    const SESSION_USER_KEY = 'UserId';
     /**
      * @var UserProvider
      */
@@ -25,10 +26,10 @@ class Authorizer
     /**
      * @return User|null
      */
-    public function getAuthUser():?User
+    public function getAuthUser(): ?User
     {
         session_start();
-        $userId = $_SESSION[$this->getSessionUserKey()] ?? null;
+        $userId = $_SESSION[self::SESSION_USER_KEY] ?? null;
         session_write_close();
         if (!$userId) {
             return null;
@@ -43,23 +44,19 @@ class Authorizer
     public function saveUserToSession(User $user): void
     {
         session_start();
-        $_SESSION[$this->getSessionUserKey()] = $user->getId();
-        session_write_close();
-    }
-
-    public function logout()
-    {
-        session_start();
-        unset($_SESSION[$this->getSessionUserKey()]);
+        $_SESSION[self::SESSION_USER_KEY] = $user->getId();
         session_write_close();
     }
 
     /**
-     * @return string
+     * @throws \Exception
      */
-    private function getSessionUserKey(): string
+    public function logout()
     {
-        return 'UserId';
+        session_start();
+        unset($_SESSION[self::SESSION_USER_KEY]);
+        $sidvalue = bin2hex(\random_bytes(13));
+        setcookie('PHPSESSID', $sidvalue, 0);
+        session_write_close();
     }
-
 }

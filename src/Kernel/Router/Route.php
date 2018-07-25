@@ -2,6 +2,11 @@
 
 namespace App\Kernel\Router;
 
+/**
+ * Class Route
+ * @package App\Kernel\Router
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class Route
 {
     /**

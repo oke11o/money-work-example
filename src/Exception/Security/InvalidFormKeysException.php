@@ -3,11 +3,11 @@
 namespace App\Exception\Security;
 
 /**
- * Class SecurityException
+ * Class InvalidFormKeysException
  * @package App\Exception\Security
  * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
  */
-abstract class SecurityException extends \RuntimeException
+class InvalidFormKeysException extends SecurityException
 {
 
 }

@@ -54,9 +54,9 @@ class Request
     }
 
     /**
-     * @return mixed
+     * @return ParameterBag
      */
-    public function getServer()
+    public function getServer(): ParameterBag
     {
         return $this->server;
     }

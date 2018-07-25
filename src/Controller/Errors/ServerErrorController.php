@@ -12,6 +12,7 @@ use App\Kernel\Http\Request;
  */
 class ServerErrorController extends BaseController
 {
+    public const ACTION_NAME_500 = '500';
     /**
      * @param Request $request
      * @param \Throwable $exception

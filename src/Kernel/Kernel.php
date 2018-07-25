@@ -3,6 +3,7 @@
 namespace App\Kernel;
 
 use App\Controller\BaseController;
+use App\Controller\Errors\ServerErrorController;
 use App\Exception\Kernel\KernelException;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
@@ -36,21 +37,22 @@ class Kernel
      * @var string
      */
     private $configDir;
-
     /**
      * @var string
      */
-    private $configName = '';
-
+    private $configName;
     /**
      * @var string
      */
-    private $configLocalName = '';
-
+    private $envConfigName;
     /**
      * @var string
      */
-    private $routesFilename = '';
+    private $localConfigName;
+    /**
+     * @var string
+     */
+    private $routesFilename ;
     /**
      * @var ContainerBuilder
      */
@@ -60,22 +62,20 @@ class Kernel
      */
     private $environment;
 
-    public function __construct($rootDir = '', $environment = 'prod', ContainerBuilder $containerBuilder)
+    public function __construct($environment = 'prod', ContainerBuilder $containerBuilder)
     {
-        $this->rootDir = $rootDir;
-        if (!$this->rootDir) {
-            $this->rootDir = dirname(dirname(__DIR__));
-        }
-        $this->configDir = 'config';
+        $this->rootDir = dirname(dirname(__DIR__));
         $this->environment = $environment;
 
         $this->routesFilename = 'routes.php';
-        if (\in_array($environment, ['prod', 'dev'])) {
-            $this->configName = 'config.php';
-            $this->configLocalName = 'config_local.php';
+
+        $this->configDir = 'config';
+        $this->configName = 'config.php';
+        $this->envConfigName = "config_$environment.php";
+        if ('test' === $environment) {
+            $this->localConfigName = "config_local_$environment.php";
         } else {
-            $this->configName = "config_$environment.php";
-            $this->configLocalName = "config_local_$environment.php";
+            $this->localConfigName = 'config_local.php';
         }
         $this->containerBuilder = $containerBuilder;
     }
@@ -91,9 +91,17 @@ class Kernel
     /**
      * @return string
      */
+    public function getEnvConfigFilePath(): string
+    {
+        return $this->rootDir.DIRECTORY_SEPARATOR.$this->configDir.DIRECTORY_SEPARATOR.$this->envConfigName;
+    }
+
+    /**
+     * @return string
+     */
     public function getLocalConfigFilePath(): string
     {
-        return $this->rootDir.DIRECTORY_SEPARATOR.$this->configDir.DIRECTORY_SEPARATOR.$this->configLocalName;
+        return $this->rootDir.DIRECTORY_SEPARATOR.$this->configDir.DIRECTORY_SEPARATOR.$this->localConfigName;
     }
 
     /**
@@ -115,38 +123,42 @@ class Kernel
     /**
      * @param Request $request
      * @return Response
+     * @throws \Psr\Container\ContainerExceptionInterface
      */
     public function run(Request $request): Response
     {
         $this->boot();
 
-        /** @var Router $router */
-        $router = $this->container->get(Router::class);
         /** @var Twig_Environment $twig */
         $twig = $this->container->get(Twig_Environment::class);
+        /** @var Router $router */
+        $router = $this->container->get(Router::class);
 
         $controllerPair = $router->match($request);
 
         try {
             $controllerName = $controllerPair->getController();
+            if (!class_exists($controllerName)) {
+                throw new KernelException('Invalid controller name');
+            }
             /** @var BaseController $controller */
             $controller = new $controllerName($router, $twig, $this->container);
             $actionName = $controllerPair->getAction();
+            if (!method_exists($controller, $actionName)) {
+                throw new KernelException('Invalid controller action name');
+            }
 
             return $controller->$actionName($request);
         } catch (\Exception|\Error $exception) {
-            $controllerPair = $router->getServerError();
+            $controller = new ServerErrorController($router, $twig, $this->container);
 
-            $controllerName = $controllerPair->getController();
-            /** @var BaseController $controller */
-            $controller = new $controllerName($router, $twig, $this->container);
-            $actionName = $controllerPair->getAction();
-
-            return $controller->$actionName($request, $exception);
+            return $controller->index($request, $exception);
         }
     }
 
     /**
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
      * @throws KernelException
      */
     private function boot(): void
@@ -163,8 +175,12 @@ class Kernel
      */
     private function buildContainer(): void
     {
-        //TODO: need DI
-        $this->container = $this->containerBuilder->create($this->rootDir, $this->environment, $this->routes, $this->config->get('db'));
+        $this->container = $this->containerBuilder->create(
+            $this->rootDir,
+            $this->environment,
+            $this->routes,
+            $this->config->get('db')
+        );
     }
 
     /**
@@ -174,16 +190,43 @@ class Kernel
     {
         $configFilepath = $this->getConfigFilePath();
         $config = include $configFilepath;
-        $localConfigFile = $this->getLocalConfigFilePath();
 
+        $config = $this->mergeEnvConfig($config);
+        $config = $this->mergeLocalConfig($config);
+
+        $this->validateConfig($config);
+
+        $this->config = new ParameterBag($config);
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function mergeEnvConfig(array $config): array
+    {
+        $localConfigFile = $this->getEnvConfigFilePath();
         if (\file_exists($localConfigFile)) {
             $localConfig = include $localConfigFile;
             $config = \array_merge($config, $localConfig);
         }
 
-        $this->validateConfig($config);
+        return $config;
+    }
 
-        $this->config = new ParameterBag($config);
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function mergeLocalConfig(array$config): array
+    {
+        $localConfigFile = $this->getLocalConfigFilePath();
+        if (\file_exists($localConfigFile)) {
+            $localConfig = include $localConfigFile;
+            $config = \array_merge($config, $localConfig);
+        }
+
+        return $config;
     }
 
     /**

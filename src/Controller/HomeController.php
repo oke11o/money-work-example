@@ -12,6 +12,8 @@ use App\Kernel\Http\Response;
  */
 class HomeController extends BaseController
 {
+    public const ACTION_NAME_INDEX = 'home';
+
     /**
      * @param Request $request
      * @return Response

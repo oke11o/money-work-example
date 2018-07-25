@@ -39,7 +39,7 @@ class KernelTest extends TestCase
     {
         $this->container = $this->prophesize(ContainerInterface::class);
         $this->containerBuilder = $this->prophesize(ContainerBuilder::class);
-        $this->kernel = new Kernel('', 'test', $this->containerBuilder->reveal());
+        $this->kernel = new Kernel('test', $this->containerBuilder->reveal());
 
         $this->router = $this->prophesize(Router::class);
         $this->twig = $this->prophesize(Twig_Environment::class);
@@ -51,9 +51,10 @@ class KernelTest extends TestCase
     public function configFilePaths()
     {
         $root = dirname(dirname(__DIR__));
-        $kernel = new Kernel('', 'test', $this->containerBuilder->reveal());
+        $kernel = new Kernel('test', $this->containerBuilder->reveal());
 
-        $this->assertEquals($root.'/config/config_test.php', $kernel->getConfigFilePath());
+        $this->assertEquals($root.'/config/config.php', $kernel->getConfigFilePath());
+        $this->assertEquals($root.'/config/config_test.php', $kernel->getEnvConfigFilePath());
         $this->assertEquals($root.'/config/config_local_test.php', $kernel->getLocalConfigFilePath());
         $this->assertEquals($root.'/config/routes.php', $kernel->getRoutesFilePath());
     }

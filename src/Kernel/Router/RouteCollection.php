@@ -1,9 +1,12 @@
 <?php
 
-
 namespace App\Kernel\Router;
 
-
+/**
+ * Class RouteCollection
+ * @package App\Kernel\Router
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
 class RouteCollection implements \Iterator
 {
     /**

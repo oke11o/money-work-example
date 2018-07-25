@@ -2,7 +2,12 @@
 
 namespace App\Exception\DataMapper;
 
-class MapperNotFoundException extends \RuntimeException
+/**
+ * Class DataMapperException
+ * @package App\Exception\DataMapper
+ * @author Sergey Bevzenko <bevzenko.sergey@gmail.com>
+ */
+class MapperNotFoundException extends DataMapperException
 {
     public function __construct(string $class)
     {

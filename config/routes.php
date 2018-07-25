@@ -1,42 +1,43 @@
 <?php
 
+
 return [
-    'home' => [
+    '_default' => 'home',
+    \App\Controller\HomeController::ACTION_NAME_INDEX => [
         'uri' => '/',
         'controller' => \App\Controller\HomeController::class,
         'action' => 'index',
         'methods' => ['GET'],
     ],
-    'login' => [
+    \App\Controller\LoginController::ACTION_NAME_LOGIN => [
         'uri' => '/login',
         'controller' => \App\Controller\LoginController::class,
         'action' => 'index',
         'methods' => ['GET', 'POST'],
     ],
-    'logout' => [
+    \App\Controller\LoginController::ACTION_NAME_LOGOUT => [
         'uri' => '/logout',
         'controller' => \App\Controller\LoginController::class,
         'action' => 'logout',
         'methods' => ['GET'],
     ],
-    'amount' => [
+    \App\Controller\AmountController::ACTION_NAME_AMOUNT => [
         'uri' => '/amount',
         'controller' => \App\Controller\AmountController::class,
         'action' => 'index',
         'methods' => ['GET'],
     ],
-    'donate' => [
+    \App\Controller\AmountController::ACTION_NAME_DONATE => [
         'uri' => '/donate',
         'controller' => \App\Controller\AmountController::class,
         'action' => 'donate',
         'methods' => ['POST'],
     ],
-    '_default' => 'home',
-    '400' => [
+    \App\Controller\Errors\NotFoundController::ACTION_NAME_404 => [
         'controller' => \App\Controller\Errors\NotFoundController::class,
         'action' => 'index',
     ],
-    '500' => [
+    \App\Controller\Errors\ServerErrorController::ACTION_NAME_500 => [
         'controller' => \App\Controller\Errors\ServerErrorController::class,
         'action' => 'index',
     ],

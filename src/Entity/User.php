@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Enum\AvailableCurrencyEnum;
+use Money\Currency;
 use Money\Money;
 
 /**
@@ -33,7 +35,7 @@ class User
 
     public function __construct()
     {
-        $this->amount = Money::RUB(0);
+        $this->amount = new Money(0, new Currency(AvailableCurrencyEnum::RUB));
     }
 
     /**

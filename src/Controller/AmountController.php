@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Enum\AvailableCurrencyEnum;
 use App\Exception\Manager\UserManagerException;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
 use App\Manager\UserManager;
+use Money\Currency;
 use Money\Money;
 
 /**
@@ -15,6 +17,9 @@ use Money\Money;
  */
 class AmountController extends BaseController
 {
+    public const ACTION_NAME_AMOUNT = 'amount';
+    public const ACTION_NAME_DONATE = 'donate';
+
     /**
      * @param Request $request
      * @return Response
@@ -28,10 +33,13 @@ class AmountController extends BaseController
         $message = $query['message'] ?? null;
         $errorMessage = $query['error_message'] ?? null;
 
-        return $this->render('amount/index.html.twig', [
-            'successMessage' => $message,
-            'errorMessage' => $errorMessage,
-        ]);
+        return $this->render(
+            'amount/index.html.twig',
+            [
+                'successMessage' => $message,
+                'errorMessage' => $errorMessage,
+            ]
+        );
     }
 
     /**
@@ -66,6 +74,7 @@ class AmountController extends BaseController
     /**
      * @param Request $request
      * @return array
+     * //TODO:
      */
     private function getDonateParam(Request $request): array
     {
@@ -74,13 +83,13 @@ class AmountController extends BaseController
             return [null, 'Empty fields'];
         }
 
-        $donate = str_replace(',','.', ($post['donate'] ?? '0'));
+        $donate = str_replace(',', '.', ($post['donate'] ?? '0'));
         $donate = (float)$donate;
         if (!$donate) {
             return [null, 'Null donate'];
         }
 
-        $donate = Money::RUB(100 * $donate);
+        $donate = new Money(100 * $donate, new Currency(AvailableCurrencyEnum::RUB));
 
         return [$donate, null];
     }
