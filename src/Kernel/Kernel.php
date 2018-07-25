@@ -8,6 +8,8 @@ use App\Exception\Kernel\KernelException;
 use App\Kernel\Http\Request;
 use App\Kernel\Http\Response;
 use App\Kernel\Router\Router;
+use App\RequestParser\DonateRequestParser;
+use Psr\Container\ContainerInterface;
 use Twig_Environment;
 
 /**
@@ -124,31 +126,24 @@ class Kernel
      * @param Request $request
      * @return Response
      * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     public function run(Request $request): Response
     {
         $this->boot();
 
-        $twig = $this->getTwig();
-        $router = $this->getRouter();
-
-        $controllerPair = $router->match($request);
-
         try {
-            $controllerName = $controllerPair->getController();
-            if (!class_exists($controllerName)) {
-                throw new KernelException('Invalid controller name');
-            }
-            /** @var BaseController $controller */
-            $controller = new $controllerName($router, $twig, $this->container);
-            $actionName = $controllerPair->getAction();
-            if (!method_exists($controller, $actionName)) {
-                throw new KernelException('Invalid controller action name');
-            }
+            $router = $this->getRouter();
 
-            return $controller->$actionName($request);
+            $controllerPair = $router->match($request);
+
+            $controller = $this->createController($controllerPair->getController());
+            $refMethod = $this->createRefMethod($controller, $controllerPair->getAction());
+            $args = $this->createMethodArgs($request, $refMethod);
+
+            return $refMethod->invokeArgs($controller, $args);
         } catch (\Exception|\Error $exception) {
-            $controller = new ServerErrorController($router, $twig, $this->container);
+            $controller = new ServerErrorController($router, $this->getTwig(), $this->container);
 
             return $controller->index($request, $exception);
         }
@@ -275,5 +270,74 @@ class Kernel
     private function getTwig(): Twig_Environment
     {
         return $this->container->get(Twig_Environment::class);
+    }
+
+    /**
+     * @param $controllerName
+     * @return object
+     *
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \ReflectionException
+     */
+    protected function createController($controllerName)
+    {
+        if (!class_exists($controllerName)) {
+            throw new KernelException('Invalid controller name');
+        }
+        $refClass = new \ReflectionClass($controllerName);
+        $refMethod = $refClass->getMethod('__construct');
+        $reflectionParams = $refMethod->getParameters();
+        $refMethod->getParameters();
+        $constructorArgs = [];
+        foreach ($reflectionParams as $param) {
+            $type = $param->getType()->getName();
+            if ($type === ContainerInterface::class) {
+                $constructorArgs[] = $this->container;
+            } else {
+                $constructorArgs[] = $this->container->get($type);
+            }
+        }
+
+        return $refClass->newInstanceArgs($constructorArgs);
+    }
+
+    /**
+     * @param $controller
+     * @param $actionName
+     * @return \ReflectionMethod
+     * @throws \ReflectionException
+     */
+    protected function createRefMethod($controller, $actionName): \ReflectionMethod
+    {
+        if (!method_exists($controller, $actionName)) {
+            throw new KernelException('Invalid controller action name');
+        }
+        $refClass = new \ReflectionClass($controller);
+
+        return $refClass->getMethod($actionName);
+    }
+
+    /**
+     * @param Request $request
+     * @param \ReflectionMethod $refMethod
+     * @return array
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    protected function createMethodArgs(Request $request, \ReflectionMethod $refMethod): array
+    {
+        $args = [];
+        $reflectionParams = $refMethod->getParameters();
+        foreach ($reflectionParams as $param) {
+            $type = $param->getType()->getName();
+            if ($type === Request::class) {
+                $args[] = $request;
+            } else {
+                $args[] = $this->container->get($type);
+            }
+        }
+
+        return $args;
     }
 }
