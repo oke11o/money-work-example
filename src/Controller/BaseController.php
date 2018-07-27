@@ -148,4 +148,19 @@ abstract class BaseController
     {
         return $this->container->get(DonateRequestParser::class);
     }
+
+    /**
+     * @return User
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    protected function getUserOrThrow(): User
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            throw new \RuntimeException('User not authorized');
+        }
+
+        return $user;
+    }
 }

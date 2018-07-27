@@ -8,7 +8,4 @@ return [
         'user' => '',
         'password' => '',
     ],
-    'services' => [
-        '$environment' => 'test',
-    ]
 ];

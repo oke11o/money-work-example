@@ -37,7 +37,7 @@ class LoginController extends BaseController
 
                 $this->getAuthorizer()->saveUserToSession($user);
 
-                return $this->redirectToRoute('amount');
+                return $this->redirectToRoute(AmountController::ACTION_NAME_AMOUNT);
             } catch (SecurityException $e) {
                 $errors = 'Invalid email or password';
             }
@@ -57,6 +57,6 @@ class LoginController extends BaseController
     {
         $this->getAuthorizer()->logout();
 
-        return $this->redirectToRoute('home');
+        return $this->redirectToRoute(HomeController::ACTION_NAME_INDEX);
     }
 }

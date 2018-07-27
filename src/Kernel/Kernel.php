@@ -18,6 +18,9 @@ use Twig_Environment;
 class Kernel
 {
     public const ENV_PROD = 'prod';
+    public const ENV_DEV = 'dev';
+    public const ENV_TEST = 'test';
+
     public const DI_CONFIG_KEY_ROUTES = 'di.config.routes';
     public const DI_CONFIG_KEY_DB = 'di.config.db';
     public const DI_CONFIG_KEY_TEMPLATE_PATH = 'di.config.templatePath';
@@ -32,7 +35,7 @@ class Kernel
      */
     private $routes = [];
     /**
-     * @var Container
+     * @var ContainerInterface
      */
     private $container;
     /**
@@ -58,7 +61,7 @@ class Kernel
     /**
      * @var string
      */
-    private $routesFilename ;
+    private $routesFilename;
     /**
      * @var string
      */
@@ -74,7 +77,7 @@ class Kernel
         $this->configDir = 'config';
         $this->configName = 'config.php';
         $this->envConfigName = "config_$environment.php";
-        if ('test' === $environment) {
+        if (self::ENV_TEST === $environment) {
             $this->localConfigName = "config_local_$environment.php";
         } else {
             $this->localConfigName = 'config_local.php';
@@ -165,21 +168,25 @@ class Kernel
     {
         if (self::ENV_PROD === $this->environment) {
             $builder = new \DI\ContainerBuilder();
-            $builder->enableCompilation($this->rootDir . '/var');
-            $builder->writeProxiesToFile(true, $this->rootDir . '/var/proxies');
+            $builder->enableCompilation($this->rootDir.DIRECTORY_SEPARATOR.'var');
+            $builder->writeProxiesToFile(true, $this->rootDir.DIRECTORY_SEPARATOR.'var'.DIRECTORY_SEPARATOR.'proxies');
         } else {
             $builder = new \DI\ContainerBuilder();
         }
 
         $builder->useAnnotations(true);
-        $builder->addDefinitions([
-            self::DI_CONFIG_KEY_ROUTES => $this->routes,
-            self::DI_CONFIG_KEY_DB => $this->config->get('db'),
-            self::DI_CONFIG_KEY_TEMPLATE_PATH => $this->rootDir.'/templates',
-            self::DI_CONFIG_KEY_TEMPLATE_CACHE_PATH => $this->rootDir.'/var/cache/twig',
-            self::DI_CONFIG_KEY_ENV => $this->environment,
-        ]);
-        $builder->addDefinitions($this->rootDir.DIRECTORY_SEPARATOR.$this->configDir.DIRECTORY_SEPARATOR.'services.php');
+        $builder->addDefinitions(
+            [
+                self::DI_CONFIG_KEY_ROUTES => $this->routes,
+                self::DI_CONFIG_KEY_DB => $this->config->get('db'),
+                self::DI_CONFIG_KEY_TEMPLATE_PATH => $this->rootDir.DIRECTORY_SEPARATOR.'templates',
+                self::DI_CONFIG_KEY_TEMPLATE_CACHE_PATH => $this->rootDir.DIRECTORY_SEPARATOR.'var'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.'twig',
+                self::DI_CONFIG_KEY_ENV => $this->environment,
+            ]
+        );
+        $builder->addDefinitions(
+            $this->rootDir.DIRECTORY_SEPARATOR.$this->configDir.DIRECTORY_SEPARATOR.'services.php'
+        );
         $container = $builder->build();
 
         $this->container = $container;
@@ -220,7 +227,7 @@ class Kernel
      * @param array $config
      * @return array
      */
-    private function mergeLocalConfig(array$config): array
+    private function mergeLocalConfig(array $config): array
     {
         $localConfigFile = $this->getLocalConfigFilePath();
         if (\file_exists($localConfigFile)) {

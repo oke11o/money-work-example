@@ -80,7 +80,7 @@ class UserMapper extends AbstractMapper
                 $this->doWithdraw($user, $money);
                 $user->setAmount($user->getAmount()->subtract($money));
             } else {
-                $error = 'Not enouth money';
+                $error = 'Not enough money';
             }
         } catch (\Exception $exception) {
             $error = $exception->getMessage();
@@ -145,10 +145,12 @@ class UserMapper extends AbstractMapper
     private function doWithdraw(User $user, Money $money)
     {
         $table = self::TABLE;
+        $fieldId = self::FIELD_ID;
+        $fieldAmount = self::FIELD_AMOUNT;
         $amount = $money->getAmount();
         $id = $user->getId();
 
-        $sql = "UPDATE {$table} SET amount=amount-:donate WHERE id=:id";
+        $sql = "UPDATE {$table} SET {$fieldAmount}={$fieldAmount}-:donate WHERE {$fieldId}=:id";
         $statement = $this->pdo->prepare($sql);
         $statement->bindParam(':donate', $amount);
         $statement->bindParam(':id', $id);

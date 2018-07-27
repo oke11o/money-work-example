@@ -62,8 +62,7 @@ class Authorizer
     {
         $this->sessionStart(true);
         unset($_SESSION[self::SESSION_USER_KEY]);
-        $sidvalue = bin2hex(\random_bytes(13));
-        setcookie('PHPSESSID', $sidvalue, 0);
+        $this->resetPhpsessid();
         $this->sessionClose(true);
     }
 
@@ -81,5 +80,11 @@ class Authorizer
             session_write_close();
             $this->sessionClosed = true;
         }
+    }
+
+    protected function resetPhpsessid(): void
+    {
+        $sidvalue = bin2hex(\random_bytes(13));
+        setcookie('PHPSESSID', $sidvalue, 0);
     }
 }

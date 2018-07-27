@@ -26,6 +26,10 @@ class AmountController extends BaseController
      */
     public function index(Request $request): Response
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute(LoginController::ACTION_NAME_LOGIN);
+        }
         $query = $request->getQuery();
         $message = $query['message'] ?? null;
         $errorMessage = $query['error_message'] ?? null;
@@ -55,25 +59,10 @@ class AmountController extends BaseController
 
             $this->getUserManager()->withdraw($user, $donate);
         } catch (UserManagerException|\RuntimeException $exception) {
-            return $this->redirectToRoute('amount', ['error_message' => $exception->getMessage()]);
+            return $this->redirectToRoute(AmountController::ACTION_NAME_AMOUNT, ['error_message' => $exception->getMessage()]);
         }
 
-        return $this->redirectToRoute('amount', ['message' => 'success']);
+        return $this->redirectToRoute(AmountController::ACTION_NAME_AMOUNT, ['message' => 'success']);
 
-    }
-
-    /**
-     * @return User
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    private function getUserOrThrow(): User
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            throw new \RuntimeException('User not authorized');
-        }
-
-        return $user;
     }
 }

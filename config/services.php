@@ -46,7 +46,7 @@ return [
 
         $loader = new Twig_Loader_Filesystem($templatePath);
         $options = [];
-        if ($env === 'prod') {
+        if ($env === Kernel::ENV_PROD) {
             $options['cache'] = $twigCacheDir;
         } else {
             $options['cache'] = false;
